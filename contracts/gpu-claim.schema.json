@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.invalid/utils-gpu-monitor/gpu-claim.schema.json",
+  "title": "GPU Monitor optional ownership claim",
+  "description": "Read-only integration for declared GPU ownership. Compatible with the existing unversioned writer format. This record does not enforce a lock or identify measured model residency.",
+  "type": "object",
+  "required": ["state"],
+  "properties": {
+    "state": { "type": "string", "enum": ["held", "released"] },
+    "holder": { "type": "string", "description": "Application or worker that declared ownership." },
+    "note": { "type": "string" },
+    "claimed_at": { "$ref": "#/$defs/timestamp" },
+    "released_at": { "$ref": "#/$defs/timestamp" },
+    "next_for": { "type": "string", "description": "Optional next owner for a handoff." }
+  },
+  "additionalProperties": true,
+  "$defs": {
+    "timestamp": {
+      "description": "UTC or offset timestamp; empty or null remains compatible with existing writers.",
+      "anyOf": [
+        { "type": "string", "format": "date-time" },
+        { "const": "" },
+        { "type": "null" }
+      ]
+    }
+  }
+}

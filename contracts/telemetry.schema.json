@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.invalid/utils-gpu-monitor/telemetry.schema.json",
+  "title": "Utils GPU Monitor telemetry",
+  "type": "object",
+  "required": ["contract", "platform", "sampled_at", "gpu", "system"],
+  "properties": {
+    "contract": { "enum": ["utils.gpu-monitor.telemetry.v1", "utils.gpu-monitor.telemetry.v2"] },
+    "platform": { "enum": ["windows", "macos"] },
+    "sampled_at": { "type": "string", "format": "date-time" },
+    "gpu": { "$ref": "#/$defs/device" },
+    "igpu": { "$ref": "#/$defs/device" },
+    "npu": { "$ref": "#/$defs/device" },
+    "system": {
+      "type": "object",
+      "required": ["cpu_percent", "memory_used_bytes", "memory_total_bytes"],
+      "properties": {
+        "cpu_percent": { "type": "number", "minimum": 0, "maximum": 100 },
+        "memory_used_bytes": { "type": "integer", "minimum": 0 },
+        "memory_total_bytes": { "type": "integer", "minimum": 0 },
+        "disk_free_bytes": { "type": "integer", "minimum": 0 },
+        "network_down_bytes_per_second": { "type": "number", "minimum": 0 },
+        "network_up_bytes_per_second": { "type": "number", "minimum": 0 }
+      }
+    },
+    "top_processes": {
+      "type": "object",
+      "description": "Largest consumers of host memory and CPU, refreshed on the slow detail cadence.",
+      "properties": {
+        "memory": { "type": "array", "items": { "$ref": "#/$defs/process" } },
+        "cpu": { "type": "array", "items": { "$ref": "#/$defs/process" } }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "device": {
+      "type": "object",
+      "description": "One accelerator. 'absent' means the machine has no such device, which is a valid reading rather than a failure.",
+      "required": ["name", "status", "utilization_percent"],
+      "properties": {
+        "name": { "type": "string" },
+        "kind": { "enum": ["dgpu", "igpu", "npu"] },
+        "status": { "enum": ["ok", "limited", "unavailable", "absent"] },
+        "utilization_percent": { "type": ["number", "null"], "minimum": 0, "maximum": 100 },
+        "temperature_c": { "type": ["number", "null"] },
+        "memory_used_bytes": { "type": ["integer", "null"], "minimum": 0 },
+        "memory_total_bytes": { "type": ["integer", "null"], "minimum": 0 },
+        "power_w": { "type": ["number", "null"], "minimum": 0 },
+        "engine": {
+          "type": ["string", "null"],
+          "description": "Busiest engine class on the device, for example 3D, Compute or VideoDecode."
+        },
+        "processes": {
+          "type": "array",
+          "description": "Processes resident on this device, busiest first.",
+          "items": { "$ref": "#/$defs/process" }
+        }
+      }
+    },
+    "process": {
+      "type": "object",
+      "required": ["pid", "name"],
+      "properties": {
+        "pid": { "type": "integer", "minimum": 0 },
+        "name": { "type": "string" },
+        "utilization_percent": { "type": ["number", "null"], "minimum": 0, "maximum": 100 },
+        "memory_bytes": { "type": ["integer", "null"], "minimum": 0 }
+      },
+      "additionalProperties": false
+    }
+  }
+}
